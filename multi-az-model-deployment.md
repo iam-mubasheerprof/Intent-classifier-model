@@ -90,13 +90,13 @@ save as SG_ID
 Add rules:
 
 ```
-aws ec2 authorize-security-group-ingress --group-id SG_ID --protocol tcp --port 8080 --cidr 0.0.0.0/0 --region $AWS_REGION
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 8080 --cidr 0.0.0.0/0 --region $AWS_REGION
 ```
 
 Open SSH 
 
 ```
-aws ec2 authorize-security-group-ingress --group-id SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0 --region $AWS_REGION
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0 --region $AWS_REGION
 ```
 
 Note: allowing 0.0.0.0/0 to port 8080 is simple for beginners but not ideal for production. The more secure pattern is:
@@ -110,14 +110,14 @@ Prepare your user-data
 
 Create a user-data.sh file with your startup script (refer userdata.sh). Make sure it is executable text.
 
-- Ensure these are exported: AMI_ID, INSTANCE_TYPE, KEY_NAME, INSTANCE_ROLE_NAME, INSTANCE_SG_ID, LAUNCH_TEMPLATE_NAME, AWS_REGION
+- Ensure these are exported: AMI_ID, INSTANCE_TYPE, KEY_NAME, LAUNCH_TEMPLATE_NAME
 
 ```
-USER_DATA=$(base64 -w0 user-data.sh)
+USER_DATA=$(base64 -w0 userdata.sh)
 aws ec2 create-launch-template \
 --launch-template-name "$LAUNCH_TEMPLATE_NAME" \
 --version-description "v1" \
---launch-template-data "{\"ImageId\":\"$AMI_ID\",\"InstanceType\":\"$INSTANCE_TYPE\",\"KeyName\":\"$KEY_NAME\",\"SecurityGroupIds\":[\"$INSTANCE_SG_ID\"],\"IamInstanceProfile\":{\"Name\":\"${INSTANCE_ROLE_NAME}-profile\"},\"UserData\":\"$USER_DATA\"}" \
+--launch-template-data "{\"ImageId\":\"$AMI_ID\",\"InstanceType\":\"$INSTANCE_TYPE\",\"KeyName\":\"$KEY_NAME\",\"SecurityGroupIds\":[\"$SG_ID\"],\"UserData\":\"$USER_DATA\"}" \
 --region $AWS_REGION
 ```
 
@@ -126,7 +126,7 @@ aws ec2 create-launch-template \
 - Create target group (instances will be registered automatically by ASG)
 
 ```
-aws elbv2 create-target-group --name $TARGET_GROUP_NAME --protocol HTTP --port 8080 --vpc-id $VPC_ID --health-check-protocol HTTP --health-check-path /health --matcher HttpCode=200 --region $AWS_REGION
+aws elbv2 create-target-group --name mlops-target-group --protocol HTTP --port 8080 --vpc-id $VPC_ID --health-check-protocol HTTP --health-check-path /health --matcher HttpCode=200 --region $AWS_REGION
 ```
 
 Save target group arn from output as TARGET_GROUP_ARN.
@@ -142,7 +142,7 @@ save as ALB_ARN
 - Create a listener to forward traffic from port 80 to the target group
 
 ```
-aws elbv2 create-listener --load-balancer-arn $ALB_ARN --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=$TARGET_GROUP_NAME --region $AWS_REGION
+aws elbv2 create-listener --load-balancer-arn $ALB_ARN --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=$TARGET_GROUP_ARN --region $AWS_REGION
 ```
 
 ### 7. Create Auto Scaling Group that uses the Launch Template
