@@ -9,11 +9,11 @@ A quick way to locate an official Ubuntu AMI (example uses AWS CLI):
 ```
 aws ec2 describe-images \
 --owners 099720109477 \
---filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-22.04-amd64-server-*" "Name=state,Values=available" \
+--filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*" "Name=state,Values=available" \
 --query 'Images | sort_by(@, &CreationDate)[-1].ImageId' --output text --region $AWS_REGION
 ```
 
-This prints the latest Ubuntu 22.04 AMI ID for the region. Adjust the name filter to whichever you need.
+This prints the latest Ubuntu 20.04 AMI ID for the region. Adjust the name filter to whichever you need.
 
 ### 2. Create a VPC, public subnets (multi-AZ), and Internet Gateway
 
