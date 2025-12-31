@@ -58,7 +58,7 @@ kubectl get inferenceservice intent-classifier -n intent
 ### Port-forward to access the model
 
 ```
-kubectl -n ml port-forward svc/<svc-name> 8080:80
+kubectl -n intent port-forward svc/<svc-name> 8080:80   #above we create namespace as intent
 ```
 
 ### Inference the Model
