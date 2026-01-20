@@ -57,7 +57,11 @@ Must be detached BEFORE deletion:
 - Detach IGW from VPC
 - Delete IGW
 
-9️⃣ VPC
+:nine: Route Tables
+
+Delete the route tables attached to the VPC. Once the VPC is deleted, the associated Route tables will be orphaned and can not be deleted.
+
+:one::zero: VPC
 
 Now the VPC will have zero dependencies, so deletion will succeed.
 
